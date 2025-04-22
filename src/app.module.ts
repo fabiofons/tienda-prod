@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ProductModule } from './product/product.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       autoLoadEntities: true,
       synchronize: true, //cambio en la entidad la sincriniza, no usar en produccion
     }),
-    ProductModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}
