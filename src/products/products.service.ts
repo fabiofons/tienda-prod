@@ -12,6 +12,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { threadId } from 'worker_threads';
+import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -37,9 +38,13 @@ export class ProductsService {
     }
   }
 
-  async findAll() {
+  async findAll(pagination: PaginationDTO) {
+    const { limit = 10, offset = 0 } = pagination;
     try {
-      const products = await this.productRepository.find();
+      const products = await this.productRepository.find({
+        skip: offset,
+        take: limit,
+      });
       return products;
     } catch (error) {
       this.handleDBErrors(error as DatabaseError);
