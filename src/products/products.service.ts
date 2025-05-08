@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { validate as isUuid } from 'uuid';
 import { DatabaseError } from 'pg-protocol';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { threadId } from 'worker_threads';
 import { PaginationDTO } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
@@ -51,11 +51,25 @@ export class ProductsService {
     }
   }
 
-  async findOne(id: string) {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) {
-      throw new NotFoundException(`Product with ${id} not found`);
+  async findOne(term: string) {
+    let product: Product | null;
+
+    if (isUuid(term)) {
+      product = await this.productRepository.findOneBy({ id: term });
+    } else {
+      const queryBuilder = this.productRepository.createQueryBuilder();
+      product = await queryBuilder
+        .where(`LOWER(title) = :title or slug = :slug`, {
+          slug: term.toLowerCase(),
+          title: term.toLowerCase(),
+        })
+        .getOne();
     }
+
+    if (!product) {
+      throw new NotFoundException(`Product with ${term} not found`);
+    }
+
     return product;
   }
 
