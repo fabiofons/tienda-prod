@@ -102,9 +102,17 @@ export class ProductsService {
 
     //create query runner
     const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
-      await this.productRepository.save(product);
+      if (images) {
+        await queryRunner.manager.delete(ProductImage, { product: { id } });
+        product.images = images.map((image) =>
+          this.productImagesRepository.create({ url: image }),
+        );
+      }
+      await queryRunner.manager.save(product);
       return product;
     } catch (error) {
       this.handleDBErrors(error as DatabaseError);
