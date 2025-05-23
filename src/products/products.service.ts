@@ -113,8 +113,12 @@ export class ProductsService {
         );
       }
       await queryRunner.manager.save(product);
-      return product;
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+      return this.findOnePlain(id);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       this.handleDBErrors(error as DatabaseError);
     }
   }
